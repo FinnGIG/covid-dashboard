@@ -1,144 +1,267 @@
-# 🦠 Globale COVID-19 Datenanalyse
+# Datenaufbereitung und Visualisierung globaler COVID-19-Daten, Alin Finn [Matrikelnummer]
 
-Ein interaktives Dashboard zur **Aufbereitung und Visualisierung globaler COVID-19-Daten**
-aus dem [Our World in Data](https://github.com/owid/covid-19-data)-Datensatz – mit Schwerpunkt
-auf **Zeitreihenanalyse** und **geographischer Visualisierung**.
+Modul: Datenaufbereitung und Verarbeitung · THWS Würzburg
 
-> Modulprojekt *Datenaufbereitung und Verarbeitung* · Python · Pandas · DuckDB · Plotly · Streamlit
+Dashboard lokal starten: `streamlit run app.py` (siehe Abschnitt Installation)
 
----
+## Projektbeschreibung
 
-## 💡 Die Idee dahinter
+Dieses Projekt bereitet den globalen COVID-19-Datensatz von Our World in Data auf und
+visualisiert ihn in einem interaktiven Dashboard. Ziel ist es, die Rohdaten systematisch zu
+verstehen, nach den Dimensionen der Datenqualität zu prüfen, Auffälligkeiten (aggregierte
+Einträge, Meldelücken, fehlende Werte) zu dokumentieren und die bereinigten Daten für die
+Zeitreihenanalyse und die geographische Visualisierung aufzubereiten. Die Ergebnisse werden in
+einem interaktiven Streamlit-Dashboard dargestellt und in einer DuckDB-Datenbank gespeichert.
 
-Der OWID-Rohdatensatz umfasst **rund 430.000 Zeilen aus 237 Ländern** über viereinhalb Jahre.
-Er ist umfassend – aber **unsauber und unübersichtlich**: aggregierte Einträge wie „World"
-verfälschen Summen, Meldelücken am Wochenende reißen Kurven auseinander, Werte liegen in völlig
-unterschiedlichen Größenordnungen.
+Technologien: Python · Pandas · DuckDB · Plotly · Streamlit · statsmodels
 
-**Die Leitfrage:** Wie verwandelt man diese Rohdaten in eine verständliche, interaktive Analyse?
+## Datensatz
 
-Die Antwort ist eine vollständige Pipeline – vom CSV bis zum Dashboard:
+Name: COVID-19 Dataset (Our World in Data)
+Quelle: https://github.com/owid/covid-19-data
+Zeitraum: 01. Januar 2020 – 14. August 2024
+Umfang: 429.435 Zeilen · 67 Spalten · 94 MB
 
-![Datenpipeline](images/pipeline.svg)
+### Spalten
 
----
+Aus den 67 Spalten des Rohdatensatzes werden 21 für die Analyse relevante Spalten verwendet:
 
-## 📸 Das Dashboard
+| Spalte | Typ | Beschreibung |
+|---|---|---|
+| iso_code | Nominal | ISO-3-Ländercode (z. B. DEU, USA). Aggregate beginnen mit `OWID_`. |
+| continent | Nominal | Kontinent. Leer bei aggregierten Einträgen. |
+| location | Nominal | Name des Landes bzw. der Region. |
+| date | Datum | Meldedatum. |
+| new_cases / new_cases_smoothed | Numerisch | Neue Fälle pro Tag bzw. als 7-Tage-Schnitt. |
+| new_deaths / new_deaths_smoothed | Numerisch | Neue Todesfälle pro Tag bzw. als 7-Tage-Schnitt. |
+| total_cases / total_deaths | Numerisch | Kumulierte Fälle bzw. Todesfälle. |
+| total_cases_per_million / total_deaths_per_million | Numerisch | Kumulierte Werte pro Million Einwohner (für Vergleiche). |
+| new_vaccinations_smoothed | Numerisch | Neue Impfungen pro Tag (7-Tage-Schnitt). |
+| people_vaccinated_per_hundred | Numerisch | Anteil mindestens einmal Geimpfter in Prozent. |
+| people_fully_vaccinated_per_hundred | Numerisch | Anteil vollständig Geimpfter in Prozent. |
+| population | Numerisch | Einwohnerzahl. |
+| gdp_per_capita | Numerisch | Bruttoinlandsprodukt pro Kopf. |
+| median_age | Numerisch | Medianalter der Bevölkerung. |
+| icu_patients_per_million | Numerisch | Intensivpatienten pro Million (nur wenige Länder). |
+| hosp_patients_per_million | Numerisch | Krankenhauspatienten pro Million (nur wenige Länder). |
+| weekly_hosp_admissions_per_million | Numerisch | Wöchentliche Krankenhausaufnahmen pro Million. |
 
-### Titel & Filterleiste
-Gesteuert wird über **Analysefragen** statt technischer Feldnamen – darunter eine automatische,
-datenbasierte Kurzantwort zur gewählten Frage.
-![Titel und Filterleiste](images/header.png)
-
-### Kennzahlen & Key Insights
-Die wichtigsten Werte auf einen Blick – inklusive Trend der letzten 30 Tage und globalem Peak.
-![Kennzahlen](images/kennzahlen.png)
-
-### Zeitreihen mit Pandemie-Ereignissen
-Globale Entwicklung mit einblendbaren Ereignissen (WHO-Pandemieerklärung, Impfstart, Delta, Omicron).
-![Zeitreihen](images/zeitreihen.png)
-
-### Geographische Weltkarte mit Datum-Slider
-Choropleth-Karte – der Slider zeigt die globale Ausbreitung über die Zeit.
-![Weltkarte](images/weltkarte.png)
-
-### Prognose & Backtesting (Bonus)
-Walk-Forward-Backtesting mit Holt-Winters-Modell und Fehlermaßen.
-![Prognose](images/prognose.png)
-
----
-
-## ✨ Funktionen
-
-| Funktion | Beschreibung |
-|---|---|
-| **Analysefragen** | Steuerung über Fragestellungen statt technischer Feldnamen (z. B. „Welche Länder waren am stärksten betroffen?") |
-| **Automatische Kurzantwort** | Zu jeder Frage eine datenbasierte Antwort, bezogen auf die gewählten Länder |
-| **Kennzahlen & Insights** | Fälle, Tode, Fallsterblichkeit, Trend der letzten 30 Tage, globaler Peak u. v. m. |
-| **Zeitreihen** | Globale Entwicklung, Länder- und Kontinentvergleich, Log-Skala, einblendbare Ereignisse (WHO, Impfstart, Delta, Omicron) |
-| **Weltkarte** | Choropleth-Karte mit Datum-Slider zur Verfolgung der globalen Ausbreitung |
-| **Impfkampagne** | Impffortschritt im Ländervergleich |
-| **Prognose (Bonus)** | Walk-Forward-Backtesting mit Holt-Winters-Modell inkl. Fehlermaßen |
-
----
-
-## 🧹 Datenaufbereitung – mit Beispielen
-
-Der spannendste Teil: aus unsauberen Rohdaten saubere Daten machen. Vier konkrete Probleme
-und ihre Lösung (umgesetzt in [`data_prep.py`](data_prep.py)):
-
-### 1. Aggregate sind keine Länder
-Der Datensatz enthält neben echten Ländern auch Summen wie `World` oder `High-income countries`:
-
-| iso_code | location |
-|---|---|
-| `OWID_WRL` | World |
-| `OWID_HIC` | High-income countries |
-| `OWID_EUR` | Europe |
-
-→ **Lösung:** Echte Länder haben einen ISO-Code aus genau drei Großbuchstaben (`DEU`, `USA`).
-Ein regulärer Ausdruck filtert die Aggregate heraus – von **429.000 auf 395.000 Zeilen**.
+## 1. Daten laden
 
 ```python
-real_countries = df['iso_code'].str.match(r'^[A-Z]{3}$', na=False)
+import pandas as pd
+import duckdb
+
+# Nur die 21 relevanten Spalten einlesen statt aller 67
+df = pd.read_csv(
+    "owid-covid-data.csv",
+    parse_dates=["date"],   # date direkt als Datum einlesen (für .dt-Operationen)
+    usecols=KEEP_COLS,      # nur benötigte Spalten laden -> schneller, weniger Speicher
+)
 ```
 
-### 2. Wochenend-Lücken bei kumulierten Werten
-Deutschland meldete 2023 oft nur einmal pro Woche – die Gesamtzahl darf dazwischen aber nicht
-auf 0 fallen:
+Ausgabe:
 
-| date | new_cases | total_cases |
-|---|---|---|
-| 2023-06-04 | 2.767 | 38.430.723 |
-| 2023-06-05 | 0 | *(leer)* → 38.430.723 |
-| 2023-06-11 | 2.392 | 38.433.115 |
+```
+Rohdaten: 429.435 Zeilen, 21 Spalten
+Zeitraum: 2020-01-01 - 2024-08-14
+Locations gesamt: 255
+```
 
-→ **Lösung:** Forward Fill pro Land – der letzte bekannte Wert wird weitergezogen.
+## 2. Erster Blick und Datenqualität
+
+Der Datensatz wird nach den klassischen Dimensionen der Datenqualität geprüft.
+
+### Vollständigkeit – Sind alle Werte vorhanden?
 
 ```python
-df[col] = df.groupby('location')[col].ffill().fillna(0)
+print(df.isnull().sum())
+# isnull() liefert True für jeden fehlenden Wert, .sum() zählt sie je Spalte
 ```
 
-### 3. Negative Tageswerte
-Durch nachträgliche Korrekturen meldeten Länder gelegentlich negative Fallzahlen – für ein
-Diagramm sinnlos. → **Lösung:** auf 0 setzen (`clip(lower=0)`).
-
-### 4. Zu viele Spalten
-Von **67 Spalten** behalten wir nur **21 relevante** – der Rest ist für Zeitreihen und
-Geographie irrelevant oder zu lückenhaft (z. B. Test- und Krankenhausdaten bei >70 % fehlend).
-
----
-
-## 🛠️ Technologie-Stack
-
-| Bereich | Werkzeug | Warum |
-|---|---|---|
-| Datenaufbereitung | **pandas** | Standard für Datenbereinigung in Python |
-| Datenhaltung | **DuckDB** | Schnelle SQL-Abfragen, läuft in-process ohne Server |
-| Visualisierung | **Plotly** | Interaktive, zoombare Diagramme und Karten |
-| Dashboard | **Streamlit** | Schnell entwickelbares Web-Dashboard ohne Frontend-Code |
-| Prognose | **statsmodels** | Holt-Winters-Zeitreihenmodell |
-
----
-
-## 📂 Projektstruktur
+Ausgabe (Auszug):
 
 ```
-covid_dashboard/
-├── app.py             # Streamlit-Dashboard (Hauptdatei)
-├── data_prep.py       # Datenbereinigung + Aufbau der DuckDB-Datenbank
-├── queries.py         # SQL-Abfragen gegen DuckDB
-├── requirements.txt   # Python-Abhängigkeiten
-├── images/            # Diagramm & Screenshots
-└── README.md
+new_cases                                19.276   ( 4%)
+total_cases                              17.631   ( 4%)
+new_deaths                               18.827   ( 4%)
+people_fully_vaccinated_per_hundred     351.374   (82%)
+icu_patients_per_million                390.319   (91%)
+gdp_per_capita                          101.143   (24%)
 ```
 
-> `covid.duckdb` und die Rohdaten-CSV sind **nicht** im Repo enthalten – die Datenbank wird
-> lokal erzeugt, die CSV ist mit ~94 MB zu groß für GitHub (siehe Installation).
+Auffälligkeit: Fall- und Todeszahlen sind fast vollständig (rund 4 % fehlend), Impf- und
+Krankenhausdaten dagegen sehr lückenhaft (82 % bzw. 91 %). Die Krankenhausdaten werden deshalb
+nicht im Hauptdashboard verwendet, da sie fast nur für wohlhabende Länder vorliegen und sonst
+eine verzerrte „globale" Aussage entstünde.
 
----
+### Eindeutigkeit – Gibt es Duplikate?
 
-## 🚀 Installation & Start
+```python
+print(f"Duplikate: {df.duplicated().sum():,}")
+```
+
+Ausgabe:
+
+```
+Duplikate: 0
+```
+
+### Validität – Entsprechen die Werte den erlaubten Formaten?
+
+Ein gültiger Ländercode besteht laut ISO 3166 aus genau drei Großbuchstaben. Aggregierte
+Einträge von Our World in Data verletzen dieses Format:
+
+```python
+ungueltige = df[~df["iso_code"].str.match(r"^[A-Z]{3}$", na=False)]
+# ^[A-Z]{3}$ = genau drei Großbuchstaben
+# ~ = alle Einträge, die NICHT diesem Muster entsprechen
+print(sorted(ungueltige["location"].unique()))
+```
+
+Ausgabe:
+
+```
+['Africa', 'Asia', 'England', 'Europe', 'European Union (27)',
+ 'High-income countries', 'Kosovo', 'Low-income countries',
+ 'Lower-middle-income countries', 'North America', 'Northern Cyprus',
+ 'Northern Ireland', 'Oceania', 'Scotland', 'South America',
+ 'Upper-middle-income countries', 'Wales', 'World']
+```
+
+Herausforderung: Diese 18 Einträge sind keine Länder, sondern Summen (z. B. „World" oder
+„High-income countries"). Würde man sie behalten, würden Fälle mehrfach gezählt – einmal beim
+Land, einmal in der Kontinent-Summe, einmal in „World".
+
+### Richtigkeit – Sind die Werte plausibel?
+
+Tageswerte (neue Fälle/Tode) können durch nachträgliche Korrekturen negativ werden. In der
+verwendeten Datensatzversion hat Our World in Data diese bereits bereinigt – der Code fängt sie
+dennoch als Absicherung ab und setzt sie auf 0.
+
+### Konsistenz – Stimmen die Werte überein?
+
+```python
+print(df["continent"].value_counts(dropna=False))
+```
+
+Ausgabe:
+
+```
+Africa           95.419
+Europe           91.031
+Asia             84.199
+North America    68.638
+Oceania          40.183
+NaN              26.525   <- aggregierte Einträge ohne Kontinent
+South America    23.440
+```
+
+Sechs gültige Kontinente. Die 26.525 Zeilen ohne Kontinent entsprechen genau den aggregierten
+Einträgen aus dem Validitätscheck.
+
+### Aktualität – Wie aktuell sind die Daten?
+
+Zeitraum: 01.01.2020 – 14.08.2024 (rund viereinhalb Jahre, alle Pandemiephasen enthalten).
+
+## 3. Datenbereinigung
+
+Die Bereinigung erfolgt in `data_prep.py`.
+
+### Aggregate entfernen
+
+```python
+real_countries = df["iso_code"].str.match(r"^[A-Z]{3}$", na=False)
+df = df[real_countries].copy()
+```
+
+Ausgabe:
+
+```
+Nach Filter: 395.311 Zeilen, 237 Länder
+```
+
+### Negative Tageswerte abfangen
+
+```python
+for col in FLOW_COLS:   # new_cases, new_deaths, new_cases_smoothed, ...
+    df[col] = df[col].fillna(0).clip(lower=0)
+    # fillna(0)      -> fehlende Tageswerte als 0 behandeln
+    # clip(lower=0)  -> negative Korrekturen auf 0 setzen
+```
+
+### Lücken bei kumulierten Werten füllen
+
+Kumulierte Werte (Gesamtfälle, Gesamttote) können logisch nicht sinken. Meldelücken (z. B. am
+Wochenende) werden mit dem letzten bekannten Wert je Land aufgefüllt.
+
+```python
+for col in CUMUL_COLS:
+    df[col] = df.groupby("location")[col].ffill().fillna(0)
+    # groupby("location") -> pro Land getrennt, damit keine Werte überspringen
+    # ffill()             -> letzten bekannten Wert weiterziehen (Forward Fill)
+```
+
+Beispiel Deutschland (kumulierte Fälle bleiben in den Lücken stabil):
+
+```
+date        new_cases   total_cases
+2023-06-04      2.767    38.430.723
+2023-06-05          0    38.430.723   <- aufgefüllt
+2023-06-11      2.392    38.433.115
+```
+
+### Impfquoten und statische Werte füllen
+
+```python
+for col in VAX_COLS:            # Impfquoten – steigen nur, sinken nie
+    df[col] = df.groupby("location")[col].ffill().fillna(0)
+
+for col in ["gdp_per_capita", "median_age"]:   # feste Länderwerte
+    df[col] = df.groupby("location")[col].ffill().bfill()
+```
+
+## 4. Datenhaltung in DuckDB
+
+Der bereinigte DataFrame wird in eine DuckDB-Datenbank geschrieben. Alle Abfragen des Dashboards
+laufen anschließend über SQL (`queries.py`).
+
+```python
+con = duckdb.connect("covid.duckdb")
+con.execute("CREATE TABLE covid AS SELECT * FROM df")
+# Erstellt die Tabelle direkt aus dem Python-DataFrame
+```
+
+Ausgabe:
+
+```
+DuckDB: covid.duckdb
+Datensätze: 395.311
+```
+
+Beispielabfrage – globale Zeitreihe (alle Länder pro Tag summiert):
+
+```sql
+SELECT date, SUM(new_cases_smoothed) AS value
+FROM covid
+WHERE date BETWEEN '2020-01-01' AND '2024-08-14'
+GROUP BY date
+ORDER BY date
+```
+
+## 5. Dashboard
+
+Das Streamlit-Dashboard (`app.py`) gliedert sich in:
+
+- Filterleiste: Steuerung über Analysefragen statt technischer Feldnamen, Länderauswahl, Zeitraum
+- Kennzahlen: Fälle, Todesfälle, Fallsterblichkeit, Trend der letzten 30 Tage, globaler Peak
+- Zeitreihen: globale Entwicklung, Länder- und Kontinentvergleich, Log-Skala, Ereignis-Marker
+  (WHO-Pandemieerklärung, Impfstart, Delta, Omicron)
+- Weltkarte: Choropleth-Karte mit Datum-Slider zur Verfolgung der globalen Ausbreitung
+- Impfkampagne: Impffortschritt im Ländervergleich
+- Prognose und Backtesting (Bonus): Walk-Forward-Backtesting mit Holt-Winters-Modell
+
+## Installation und Start
 
 ```bash
 # 1. Repository klonen
@@ -148,7 +271,7 @@ cd covid-dashboard
 # 2. Abhängigkeiten installieren
 pip install -r requirements.txt
 
-# 3. Datensatz herunterladen (~94 MB)
+# 3. Datensatz herunterladen (~94 MB, nicht im Repo enthalten)
 #    von https://github.com/owid/covid-19-data/tree/master/public/data
 #    die Datei "owid-covid-data.csv" in den Projektordner legen
 
@@ -159,23 +282,23 @@ python data_prep.py
 streamlit run app.py
 ```
 
-Das Dashboard öffnet sich automatisch unter `http://localhost:8501`.
+Das Dashboard öffnet sich anschließend im Browser unter http://localhost:8501.
 
----
+## Dateien
 
-## 🤔 Grenzen & kritische Reflexion
+```
+covid_dashboard/
+├── app.py             Streamlit-Dashboard
+├── data_prep.py       Datenbereinigung und Aufbau der DuckDB-Datenbank
+├── queries.py         SQL-Abfragen gegen DuckDB
+├── requirements.txt   Python-Abhängigkeiten
+└── README.md
+```
 
-- **Meldeverzögerungen** (v. a. Wochenenden) und unterschiedliche Teststrategien je Land machen
-  globale Vergleiche unsicher – die Log-Skala hilft, verzerrt aber die Interpretation.
-- **Test- und Krankenhausdaten** wurden bewusst ausgeklammert, da sie fast nur für reiche
-  Länder vorliegen und sonst eine verzerrte „globale" Aussage entstünde.
-- Die **Prognose** ist ein ehrlicher Bonus: Klassische Modelle funktionieren in ruhigen Phasen,
-  **versagen aber an Wellen-Wendepunkten** – diese werden durch externe Faktoren (neue Varianten,
-  Maßnahmen) ausgelöst, die nicht in den historischen Daten stehen. Genau das macht das
-  Walk-Forward-Backtesting sichtbar.
+Hinweis: Die Rohdaten-CSV (~94 MB) und die erzeugte Datenbank `covid.duckdb` sind nicht im
+Repository enthalten. Die CSV wird wie oben beschrieben heruntergeladen, die Datenbank von
+`data_prep.py` erzeugt.
 
----
+## Datenquelle
 
-## 📊 Datenquelle
-
-[Our World in Data – COVID-19 Dataset](https://github.com/owid/covid-19-data) · Lizenz: CC BY 4.0
+Our World in Data – COVID-19 Dataset · https://github.com/owid/covid-19-data · Lizenz CC BY 4.0
