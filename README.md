@@ -1,4 +1,4 @@
-# Datenaufbereitung und Visualisierung globaler COVID-19-Daten, Alin Finn [Matrikelnummer]
+# Datenaufbereitung und Visualisierung globaler COVID-19-Daten, Alin Finn [6624015]
 
 Modul: Datenaufbereitung und Verarbeitung · THWS Würzburg
 
