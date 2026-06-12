@@ -22,6 +22,10 @@ Quelle: https://github.com/owid/covid-19-data
 Zeitraum: 01. Januar 2020 – 14. August 2024
 Umfang: 429.435 Zeilen · 67 Spalten · 94 MB
 
+Hinweis: Die CSV-Datei ist mit rund 94 MB zu groß für GitHub (das Limit liegt bei 100 MB, ab
+50 MB gibt es Warnungen) und ist deshalb nicht im Repository enthalten. Sie wird wie im Abschnitt
+Installation beschrieben von Our World in Data heruntergeladen und in den Projektordner gelegt.
+
 ### Spalten
 
 Aus den 67 Spalten des Rohdatensatzes werden 21 für die Analyse relevante Spalten verwendet:
