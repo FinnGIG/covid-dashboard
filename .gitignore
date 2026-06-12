@@ -1,0 +1,22 @@
+# Rohdaten – zu groß für GitHub (siehe README zum Download)
+owid-covid-data.csv
+owid-covid-data-bereinigt.xlsx
+
+# Automatisch erzeugte Datenbank (wird von data_prep.py gebaut)
+*.duckdb
+
+# Lokale Backup-/Hilfsdateien
+app_backup_tabs.py
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
