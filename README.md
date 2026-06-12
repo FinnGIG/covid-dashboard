@@ -1,52 +1,127 @@
-# Globale COVID-19 Datenanalyse – Interaktives Dashboard
+# 🦠 Globale COVID-19 Datenanalyse
 
-Ein interaktives Dashboard zur Aufbereitung und Visualisierung globaler COVID-19-Daten
-aus dem [Our World in Data](https://github.com/owid/covid-19-data)-Datensatz.
-Schwerpunkt: **Zeitreihenanalyse** und **geographische Visualisierung**.
+Ein interaktives Dashboard zur **Aufbereitung und Visualisierung globaler COVID-19-Daten**
+aus dem [Our World in Data](https://github.com/owid/covid-19-data)-Datensatz – mit Schwerpunkt
+auf **Zeitreihenanalyse** und **geographischer Visualisierung**.
 
-Entstanden im Modul *Datenaufbereitung und Verarbeitung* (THWS).
-
----
-
-## Idee & Ziel
-
-Der OWID-Rohdatensatz umfasst **rund 430.000 Zeilen aus 237 Ländern** über viereinhalb
-Jahre – umfassend, aber unsauber und unübersichtlich. Ziel des Projekts ist eine vollständige
-Pipeline **vom Rohdaten-CSV bis zum interaktiven Dashboard**:
-
-1. Daten automatisch bereinigen und in einer Datenbank strukturieren
-2. Zeitreihen und eine geographische Weltkarte erstellen
-3. Alles in einem Dashboard bündeln, das ohne Programmierkenntnisse bedienbar ist
+> Modulprojekt *Datenaufbereitung und Verarbeitung* · Python · Pandas · DuckDB · Plotly · Streamlit
 
 ---
 
-## Funktionen
+## 💡 Die Idee dahinter
 
-- **Analysefragen statt Feldnamen** – die Steuerung erfolgt über Fragestellungen
-  (z. B. „Welche Länder waren am stärksten betroffen?")
-- **Automatische Kurzantwort** zu jeder Frage, bezogen auf die ausgewählten Länder
-- **Kennzahlen & Key Insights** (Fälle, Tode, Fallsterblichkeit, Trend der letzten 30 Tage …)
-- **Zeitreihen**: globale Entwicklung, Länder- und Kontinentvergleich,
-  Log-Skala und einblendbare Pandemie-Ereignisse (WHO, Impfstart, Delta, Omicron)
-- **Geographische Weltkarte** (Choropleth) mit Datum-Slider zur Verfolgung der Ausbreitung
-- **Impfkampagne** im Ländervergleich
-- **Prognose & Backtesting (Bonus)** – Walk-Forward-Backtesting mit Holt-Winters-Modell
+Der OWID-Rohdatensatz umfasst **rund 430.000 Zeilen aus 237 Ländern** über viereinhalb Jahre.
+Er ist umfassend – aber **unsauber und unübersichtlich**: aggregierte Einträge wie „World"
+verfälschen Summen, Meldelücken am Wochenende reißen Kurven auseinander, Werte liegen in völlig
+unterschiedlichen Größenordnungen.
+
+**Die Leitfrage:** Wie verwandelt man diese Rohdaten in eine verständliche, interaktive Analyse?
+
+Die Antwort ist eine vollständige Pipeline – vom CSV bis zum Dashboard:
+
+![Datenpipeline](images/pipeline.svg)
 
 ---
 
-## Technologie-Stack
+## 📸 Das Dashboard
 
-| Bereich | Werkzeug |
+### Titel & Filterleiste
+Gesteuert wird über **Analysefragen** statt technischer Feldnamen – darunter eine automatische,
+datenbasierte Kurzantwort zur gewählten Frage.
+![Titel und Filterleiste](images/header.png)
+
+### Kennzahlen & Key Insights
+Die wichtigsten Werte auf einen Blick – inklusive Trend der letzten 30 Tage und globalem Peak.
+![Kennzahlen](images/kennzahlen.png)
+
+### Zeitreihen mit Pandemie-Ereignissen
+Globale Entwicklung mit einblendbaren Ereignissen (WHO-Pandemieerklärung, Impfstart, Delta, Omicron).
+![Zeitreihen](images/zeitreihen.png)
+
+### Geographische Weltkarte mit Datum-Slider
+Choropleth-Karte – der Slider zeigt die globale Ausbreitung über die Zeit.
+![Weltkarte](images/weltkarte.png)
+
+### Prognose & Backtesting (Bonus)
+Walk-Forward-Backtesting mit Holt-Winters-Modell und Fehlermaßen.
+![Prognose](images/prognose.png)
+
+---
+
+## ✨ Funktionen
+
+| Funktion | Beschreibung |
 |---|---|
-| Datenaufbereitung | **pandas** |
-| Datenhaltung & Abfragen | **DuckDB** (SQL, in-process) |
-| Visualisierung | **Plotly** |
-| Dashboard | **Streamlit** |
-| Prognose | **statsmodels** (Holt-Winters) |
+| **Analysefragen** | Steuerung über Fragestellungen statt technischer Feldnamen (z. B. „Welche Länder waren am stärksten betroffen?") |
+| **Automatische Kurzantwort** | Zu jeder Frage eine datenbasierte Antwort, bezogen auf die gewählten Länder |
+| **Kennzahlen & Insights** | Fälle, Tode, Fallsterblichkeit, Trend der letzten 30 Tage, globaler Peak u. v. m. |
+| **Zeitreihen** | Globale Entwicklung, Länder- und Kontinentvergleich, Log-Skala, einblendbare Ereignisse (WHO, Impfstart, Delta, Omicron) |
+| **Weltkarte** | Choropleth-Karte mit Datum-Slider zur Verfolgung der globalen Ausbreitung |
+| **Impfkampagne** | Impffortschritt im Ländervergleich |
+| **Prognose (Bonus)** | Walk-Forward-Backtesting mit Holt-Winters-Modell inkl. Fehlermaßen |
 
 ---
 
-## Projektstruktur
+## 🧹 Datenaufbereitung – mit Beispielen
+
+Der spannendste Teil: aus unsauberen Rohdaten saubere Daten machen. Vier konkrete Probleme
+und ihre Lösung (umgesetzt in [`data_prep.py`](data_prep.py)):
+
+### 1. Aggregate sind keine Länder
+Der Datensatz enthält neben echten Ländern auch Summen wie `World` oder `High-income countries`:
+
+| iso_code | location |
+|---|---|
+| `OWID_WRL` | World |
+| `OWID_HIC` | High-income countries |
+| `OWID_EUR` | Europe |
+
+→ **Lösung:** Echte Länder haben einen ISO-Code aus genau drei Großbuchstaben (`DEU`, `USA`).
+Ein regulärer Ausdruck filtert die Aggregate heraus – von **429.000 auf 395.000 Zeilen**.
+
+```python
+real_countries = df['iso_code'].str.match(r'^[A-Z]{3}$', na=False)
+```
+
+### 2. Wochenend-Lücken bei kumulierten Werten
+Deutschland meldete 2023 oft nur einmal pro Woche – die Gesamtzahl darf dazwischen aber nicht
+auf 0 fallen:
+
+| date | new_cases | total_cases |
+|---|---|---|
+| 2023-06-04 | 2.767 | 38.430.723 |
+| 2023-06-05 | 0 | *(leer)* → 38.430.723 |
+| 2023-06-11 | 2.392 | 38.433.115 |
+
+→ **Lösung:** Forward Fill pro Land – der letzte bekannte Wert wird weitergezogen.
+
+```python
+df[col] = df.groupby('location')[col].ffill().fillna(0)
+```
+
+### 3. Negative Tageswerte
+Durch nachträgliche Korrekturen meldeten Länder gelegentlich negative Fallzahlen – für ein
+Diagramm sinnlos. → **Lösung:** auf 0 setzen (`clip(lower=0)`).
+
+### 4. Zu viele Spalten
+Von **67 Spalten** behalten wir nur **21 relevante** – der Rest ist für Zeitreihen und
+Geographie irrelevant oder zu lückenhaft (z. B. Test- und Krankenhausdaten bei >70 % fehlend).
+
+---
+
+## 🛠️ Technologie-Stack
+
+| Bereich | Werkzeug | Warum |
+|---|---|---|
+| Datenaufbereitung | **pandas** | Standard für Datenbereinigung in Python |
+| Datenhaltung | **DuckDB** | Schnelle SQL-Abfragen, läuft in-process ohne Server |
+| Visualisierung | **Plotly** | Interaktive, zoombare Diagramme und Karten |
+| Dashboard | **Streamlit** | Schnell entwickelbares Web-Dashboard ohne Frontend-Code |
+| Prognose | **statsmodels** | Holt-Winters-Zeitreihenmodell |
+
+---
+
+## 📂 Projektstruktur
 
 ```
 covid_dashboard/
@@ -54,76 +129,53 @@ covid_dashboard/
 ├── data_prep.py       # Datenbereinigung + Aufbau der DuckDB-Datenbank
 ├── queries.py         # SQL-Abfragen gegen DuckDB
 ├── requirements.txt   # Python-Abhängigkeiten
+├── images/            # Diagramm & Screenshots
 └── README.md
 ```
 
-> Hinweis: `covid.duckdb` wird von `data_prep.py` erzeugt und ist daher **nicht** im
-> Repository enthalten. Auch die große Rohdaten-CSV ist ausgeschlossen (siehe unten).
+> `covid.duckdb` und die Rohdaten-CSV sind **nicht** im Repo enthalten – die Datenbank wird
+> lokal erzeugt, die CSV ist mit ~94 MB zu groß für GitHub (siehe Installation).
 
 ---
 
-## Installation & Start
+## 🚀 Installation & Start
 
-### 1. Repository klonen
 ```bash
-git clone https://github.com/<DEIN-NUTZERNAME>/covid-dashboard.git
+# 1. Repository klonen
+git clone https://github.com/FinnGIG/covid-dashboard.git
 cd covid-dashboard
-```
 
-### 2. Abhängigkeiten installieren
-```bash
+# 2. Abhängigkeiten installieren
 pip install -r requirements.txt
-```
 
-### 3. Datensatz herunterladen
-Die Rohdaten-CSV (~94 MB) ist aus Größengründen nicht im Repo enthalten.
-Lade die Datei `owid-covid-data.csv` von Our World in Data herunter:
+# 3. Datensatz herunterladen (~94 MB)
+#    von https://github.com/owid/covid-19-data/tree/master/public/data
+#    die Datei "owid-covid-data.csv" in den Projektordner legen
 
-- Quelle: https://github.com/owid/covid-19-data/tree/master/public/data
-
-Lege die Datei anschließend **direkt in den Projektordner** (neben `app.py`).
-
-### 4. Datenbank aufbauen
-```bash
+# 4. Datenbank aufbauen (erzeugt covid.duckdb)
 python data_prep.py
-```
-Dies bereinigt die Daten und erzeugt `covid.duckdb`.
 
-### 5. Dashboard starten
-```bash
+# 5. Dashboard starten
 streamlit run app.py
 ```
-Das Dashboard öffnet sich automatisch im Browser unter `http://localhost:8501`.
+
+Das Dashboard öffnet sich automatisch unter `http://localhost:8501`.
 
 ---
 
-## Schritte der Datenaufbereitung
+## 🤔 Grenzen & kritische Reflexion
 
-Die Bereinigung in `data_prep.py` umfasst:
-
-1. **Spaltenauswahl** – von 67 auf 21 relevante Spalten reduziert
-2. **Länderfilter** – Aggregate wie „World" oder „High-income countries" werden über den
-   ISO-3-Code (genau drei Großbuchstaben) entfernt → von 429.000 auf 395.000 Zeilen
-3. **Negative Tageswerte** (Meldekorrekturen) werden auf 0 gesetzt
-4. **Forward Fill** – Lücken bei kumulierten Werten und Impfquoten werden pro Land
-   mit dem letzten bekannten Wert gefüllt
-5. **Statische Werte** (BIP, Medianalter) werden pro Land vervollständigt
-
----
-
-## Hinweise & Grenzen
-
-- Die Daten enthalten **Meldeverzögerungen** (besonders an Wochenenden) und unterschiedliche
-  Teststrategien je Land – globale Vergleiche sind daher mit Vorsicht zu interpretieren.
-- Krankenhaus- und Testdaten sind nur für wenige Länder verfügbar und wurden bewusst
-  ausgeklammert, um keine verzerrte „globale" Aussage zu erzeugen.
-- Die **Prognose** ist als ehrlicher Bonus gedacht: Klassische Zeitreihenmodelle funktionieren
-  in ruhigen Phasen, versagen aber an Wellen-Wendepunkten – diese werden durch externe
-  Faktoren (Varianten, Maßnahmen) ausgelöst, die nicht in den historischen Daten stehen.
+- **Meldeverzögerungen** (v. a. Wochenenden) und unterschiedliche Teststrategien je Land machen
+  globale Vergleiche unsicher – die Log-Skala hilft, verzerrt aber die Interpretation.
+- **Test- und Krankenhausdaten** wurden bewusst ausgeklammert, da sie fast nur für reiche
+  Länder vorliegen und sonst eine verzerrte „globale" Aussage entstünde.
+- Die **Prognose** ist ein ehrlicher Bonus: Klassische Modelle funktionieren in ruhigen Phasen,
+  **versagen aber an Wellen-Wendepunkten** – diese werden durch externe Faktoren (neue Varianten,
+  Maßnahmen) ausgelöst, die nicht in den historischen Daten stehen. Genau das macht das
+  Walk-Forward-Backtesting sichtbar.
 
 ---
 
-## Datenquelle
+## 📊 Datenquelle
 
-Our World in Data – COVID-19 Dataset
-<https://github.com/owid/covid-19-data> (CC BY 4.0)
+[Our World in Data – COVID-19 Dataset](https://github.com/owid/covid-19-data) · Lizenz: CC BY 4.0
