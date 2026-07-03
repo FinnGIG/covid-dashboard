@@ -64,7 +64,13 @@ html, body, [class*="css"], .stApp, button, input, select, textarea {
 }
 
 /* Multiselect-Tags blau */
-span[data-baseweb="tag"] { background-color: #1d4ed8 !important; border-radius: 6px !important; }
+span[data-baseweb="tag"] { background-color: #475569 !important; border-radius: 6px !important; }
+
+/* Filter-Beschriftungen (Analysefrage, Länder, Zeitraum) besser lesbar */
+[data-testid="stWidgetLabel"] p, [data-testid="stWidgetLabel"] label {
+    font-weight: 600 !important;
+    color: #334155 !important;
+}
 
 /* Tab-Unterstrich blau */
 [data-baseweb="tab-highlight"] { background-color: #1d4ed8 !important; }
@@ -243,13 +249,13 @@ def cached_hospital_timeline(countries_tuple, metric, start, end):
 # ── Titel ─────────────────────────────────────────────────────────────────────
 st.markdown("""
 <div style="display:flex; align-items:center; gap:20px;
-            background:linear-gradient(to right, #eff6ff, #f5f8ff);
-            border-left:4px solid #1d4ed8; border-radius:0 8px 8px 0;
+            background:linear-gradient(to right, #f8fafc, #f1f5f9);
+            border-left:4px solid #475569; border-radius:0 8px 8px 0;
             padding:12px 20px; margin-bottom:12px;">
     <div>
-        <div style="color:#1d4ed8; font-size:1.55rem; font-weight:800; margin:0 0 2px 0;
+        <div style="color:#334155; font-size:1.55rem; font-weight:800; margin:0 0 2px 0;
                     line-height:1.2;">Globale COVID-19 Datenanalyse</div>
-        <div style="color:#9ca3af; font-size:0.78rem; margin:0;">
+        <div style="color:#64748b; font-size:0.82rem; font-weight:500; margin:0;">
             430.000 Datenpunkte &nbsp;·&nbsp; 237 Länder &nbsp;·&nbsp;
             Jan 2020 – Aug 2024 &nbsp;·&nbsp; Our World in Data
         </div>
@@ -296,8 +302,8 @@ end_fmt   = datetime.datetime.strptime(end,   "%Y-%m-%d").strftime("%d.%m.%Y")
 if selected:
     preview = ", ".join(selected[:4]) + (f" +{len(selected)-4} weitere" if len(selected) > 4 else "")
     st.markdown(f"""
-    <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px;
-                padding:10px 16px; font-size:0.875rem; color:#1e40af; margin-bottom:4px;">
+    <div style="background:#f1f5f9; border:1px solid #e2e8f0; border-radius:8px;
+                padding:10px 16px; font-size:0.875rem; color:#334155; margin-bottom:4px;">
         <strong>Aktueller Vergleich:</strong> {preview}
         &nbsp;·&nbsp; {start_fmt} – {end_fmt}
         &nbsp;·&nbsp; {question}
